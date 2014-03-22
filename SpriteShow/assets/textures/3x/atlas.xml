@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:c6e0db0be759681834f37380ad62a4c2$ -->
+<TextureAtlas imagePath="atlas.png">
+    <SubTexture name="bigYStar" x="2" y="2" width="44" height="44"/>
+    <SubTexture name="bigGStar" x="47" y="2" width="44" height="44"/>
+    <SubTexture name="bigPStar" x="92" y="2" width="44" height="44"/>
+    <SubTexture name="bigRStar" x="137" y="2" width="44" height="44"/>
+    <SubTexture name="bigBStar" x="182" y="2" width="44" height="44"/>
+    
+    
+    <SubTexture name="smallYStar" x="788" y="2" width="15" height="15"/>
+    <SubTexture name="smallGStar" x="805" y="2" width="15" height="15"/>
+    <SubTexture name="smallPStar" x="822" y="2" width="15" height="15"/>
+    <SubTexture name="smallRStar" x="839" y="2" width="15" height="15"/>
+    <SubTexture name="smallBStar" x="856" y="2" width="15" height="15"/>
+    
+    
+</TextureAtlas>
