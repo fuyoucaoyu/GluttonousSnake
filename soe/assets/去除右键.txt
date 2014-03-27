@@ -1,0 +1,10 @@
+
+fp11.2以上，
+
+在编译常数中加一行-swf-version 15
+之后
+stage.addEventListener(MouseEvent.RIGHT_MOUSE_DOWN,func);
+func写什么请随意。之后右键就屏了。
+
+    flashPlayer11.2的新特性，允许使用鼠标右键或中键
+监听MouseEvent.RIGHT_MOUSE_DOWN即可屏蔽自动弹出菜单。

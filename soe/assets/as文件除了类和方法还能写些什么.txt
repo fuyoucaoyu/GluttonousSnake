@@ -1,0 +1,120 @@
+.as文件除了类和方法还能写些什么
+
+.as文件写得最多的是类
+//A.as
+package{ public class A{}};
+其次是接口。
+//B.as
+package{ public interface B{}};
+
+1，全局函数
+flash自带了一些全局函数（与类的方法区分，下文统一称其为“函数”）
+譬如flash.utils.getDefinitionByName()
+这个方法并非构建一个getDefinitionByName类，并以其构造方法充当全局函数。
+其实现的办法与下文类似
+//getDefinitionByName.as
+pacakge flash.utils{
+public funciton getDefinitionByName(xxxx){xxxxxxx};
+}
+该.as文件并不包含类，只包括一个public方法，
+该方法可以被全局调用（非默认包的话需要先导入包）
+
+因为.as文件只能有一个外部可见定义，用上文的办法，只能在一个.as文件中定义一个全局方法
+
+2，全局常量或变量
+与全局函数的定义类似
+//getDefinitionByName.as
+pacakge flash.utils{
+public var someValue:int = 100;
+}
+经测试，无法用类似的代码实现getter/setter会提示变量未定义。
+
+3，全局命名空间
+直接写代码
+//ns_a.as
+package{
+public namespace ns_a;
+}
+
+4. 
+include "asfile.as"
+一些重复使用的代码片段可以往一个as文件里写
+
+----------------------------------------------------------
+  分析：
+----------------------------------------------------------
+2，关于全局函数效率
+调用全局函数当然也会使用一定内存，
+调用全局方法不生成对象，
+测试全局函数与用类构造方法充当的全局函数执行效率
+package{
+public class A{
+public function A()        {}
+}
+}
+
+package{                
+public function B()        {}
+}
+
+执行时间比例稳定于103:38，
+
+3，关于全局函数的一些细节
+全局函数可以同时附带包外类、包外变量。
+这些变量不会不经全局函数而被外界访问
+//test.as
+package{
+public function test(){
+trace(a);
+a++;
+}
+}
+var a:int = 0;
+复制代码
+外部调用两次test()，输出0,1。
+
+4
+任何类要实现IEventDispatcher接口时，include一下即可，而不必每次都要在类里加上这十几行代码。
+
+Flickr.as
+package
+{
+    import flash.utils.Proxy;
+    import flash.events.IEventDispatcher;    
+    dynamic public class Flickr extends Proxy implements IEventDispatcher
+    {
+        public function Flickr()
+        {
+            super();
+        }
+        include "IEventDispatcherCode.as"
+    }
+}
+
+IEventDispatcherCode.as
+                import flash.events.EventDispatcher;    
+                private var _eventDispatcher:EventDispatcher=new EventDispatcher(this);
+                public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
+                {
+                        _eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+                }
+                
+                public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
+                {
+                        _eventDispatcher.removeEventListener(type, listener, useCapture);
+                }
+                
+                public function dispatchEvent(event:Event):Boolean
+                {
+                        return _eventDispatcher.dispatchEvent(event);
+                }
+                
+                public function hasEventListener(type:String):Boolean
+                {
+                        return _eventDispatcher.hasEventListener(type);
+                }
+                
+                public function willTrigger(type:String):Boolean
+                {
+                        return _eventDispatcher.willTrigger(type);
+                }

@@ -1,0 +1,8 @@
+The AnimatedBitmap class provides functionality for Bitmap objects that are animated by using a series of still images. When creating a new AnimatedBitmap you provide a BitmapData object that contains an image that consists of the ¡®single-frame¡¯ images for the animation.
+
+
+What are the advantages over using a generic MovieClip? 
+When writing games you might have several animated graphics (also called sprites, but not related to the AS3 Sprite class) that should run with a different framerate than the game¡¯s global framerate. Let¡¯s say your game runs with a global framerate of 99 and you put several animated sprites into your game that were created for playing back with a framerate of 24. With a MovieClip all those sprites would also play with a framerate of 99 which means they play way too fast. However with an AnimatedBitmap you can set every framerate individually. There are a couple of other advantages like that a Bitmap is more lightweight than a MovieClip and it has a isPlaying() method. Also it changes the way of how to embed assets. Instead of embedding many files for one animation only one image for a whole animation sequence is embedded which has positive effects on the file size. The ring sequence used in the demo has 21 frames that use 102Kb as single images but only 44Kb when they are combined to one image.
+1. Child can use a different framerate with the parent.
+2. Bitmap is lightweight than a MovieClip.
+3. Instead of embedding many files for one animation only one image for a whole animation sequence is embedded which has positive effects on the file size.

@@ -1,0 +1,15 @@
+
+
+var bm:Bitmap = new Bitmap();
+
+方式1： var bm2:Bitmap = new Bitmap(bm.bitMapData.clone());
+
+方式2： var bm2:Bitmap = new Bitmap(bm.bitmapData);
+
+方式1位图有单独数据，改一个不会影响另一个，
+效率较低，但在位图不算大的前提下 能承受循环5~7次调用
+
+方式2共享位图数据，效率高，
+缺点是如果位图数据变化了，所有bmp显示的都跟着变化。
+
+cacheAsBitmap对位图对象来说，加不加无所谓

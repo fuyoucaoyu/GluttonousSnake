@@ -1,0 +1,184 @@
+流水线工厂，分离经常修改数值
+
+我们为什么需要工厂
+无论流水线工厂还是经典工厂，都集中解决一个问题——将构造方法藏起来。
+在实际开发中，可能A类的构造方法不合理，需要修改参数类型或数量
+那么，这会导致所有调用new A()的类都要修改A的构造方法。
+流水线工厂和经典工厂将构造方法集中给工厂类来管理，
+不允许随便使用new关键字，新生成对象必须经由工厂的方法来批准，
+构造方法被调整的时候，以工厂类为缓冲，
+在相当大的程度上降低整个项目的修改量。（不是完全避免）
+
+流水线工厂与经典工厂有何区别
+流水线工厂实际集成了经典工厂，以及“建造者模式”二者 (建造者模式: 将一个复杂对象的构造与它的表示分离，使同样的构建过程可以创建不同的表示，这样的设计模式被称为建造者模式。)
+流水线工厂只使用口头约束限制用户行为
+并不符合开闭原则
+但也因此省下了至少3层的函数嵌套，大大降低了代码的复杂程度以及提高运行效率
+ 
+./流水线工厂.jpg
+
+上图为流水线工厂的具体生产对象步骤。
+流水线工厂能满足经典工厂的“藏构造方法”的基本思路
+但流水线工厂的可继承性低于经典工厂，比经典工厂修改次数更多。
+数值策划师可以通过修改流水线工厂这一个文件来调整大量的平衡性数据
+流水线工厂比起经典工厂难度中等，使用成本较低，代码量适中，
+流水线工厂将对象的生成步骤分离，对客户一日三变的改动要求有非常强大的承受力
+
+流水线工厂适合中小型项目
+如果对更大的项目，
+笔者更推荐使用经典工厂，以及将数据放在单独的xml中
+
+
+进入正题。
+设，我们将要开发一款类似魂斗罗的闯关游戏，
+这款游戏中玩家有4种武器，分别是手枪、机关枪、火箭炮、手榴弹。
+
+
+——普通设计下，weapon包的结构如下
+weapon.Gun  //枪类，手枪和机枪的具体模型类
+weapon.Rocket  //火箭类，火箭炮的具体模型类
+weapon.Grenade //榴弹类，手榴弹的具体模型类
+——熟练的程序员会将武器的特性做出归纳，并做出一个基类
+weapon.WeaponBase  //武器类的默认实现，是上述3个类的基类。
+——再精明一点的程序员会为这组类做出一个接口
+weapon.IWeaponBase //武器类的接口，WeaponBase是其默认实现
+——流水线工厂为这个包增加2个类：
+weapon.WeaponParas //武器参数类，用法将在后文说明。
+weapon.WeaponFactory  //武器工厂，负责生产武器对象，今天的主角。
+
+
+约束1
+请将此包中的3个具体模型类以及WeaponBase设置为internal class，
+而不是public class，他们在包外是不可见的。
+这样如果我们在默认包的文档类new一个Gun对象，程序将会报错。
+只有weapon.WeaponFactory可以new一个Gun对象，并将其作为方法返回值发送到包外。
+在包外用public interface IWeaponBase作为类型，才能引用一个具体的武器
+
+约束2
+全部3个具体模型类以及WeaponBase的构造方法接受且只接受一个WeaponParas类型的参数。
+WeaponParas也是internal class，外部不可见。
+WeaponParas的全部属性是public属性。（可以但不推荐对该类使用getter/setter）
+
+约束3
+全部3个具体模型类以及WeaponBase只能在构造方法中使用作为参数的WeaponParas对象，
+引用其属性，而不允许持有该WeaponParas对象的引用。
+
+package weapon {
+        public class WeaponFactory {
+                //工厂的产品目录。
+                public static const PISTOL:int = 0;
+                public static const MACHINE_GUN:int = 1;
+                public static const GRENADE:int = 2;
+                public static const ROCKET:int = 3;
+                
+                private static const paras:WeaponParas = new WeaponParas;
+                
+                public static function product(caller:IUnitBase,order:int,args:* = null):IWeaponBase{
+                        var rt:IWeaponBase;
+                        var mod:Class;
+                        
+                        //产品的默认零件
+                        paras.owner = caller;
+                        paras.spriteClass = flash.display.Sprite;
+                        paras.atk = 10;
+                        paras.speed = 1;
+                        paras.ammo = 10;
+                        paras.dmgType = "bullet";
+                        
+                        //生产特有零件
+                        switch(order){
+                                case PISTOL:
+                                        mod = weapon.Gun;
+                                        paras.spriteClass = fe.Bullet_mc; 
+                                        //fe包表示从flash导出类，下同
+                                        break;
+                                case MACHINE_GUN:
+                                        mod = weapon.Gun;
+                                        paras.spriteClass = fe.Bullet_mc;
+                                        paras.speed = 5;
+                                        paras.ammo = 200;
+                                        break;
+                                case ROCKET:
+                                        mod = weapon.Rocket
+                                        paras.spriteClass = fe.Rocket_mc;
+                                        paras.atk = 50;
+                                        paras.dmgType = "exp";
+                                        break;
+                                case GRENADE:
+                                        mod = weapon.Grenade
+                                        paras.spriteClass = fe.Rocket_mc;
+                                        paras.atk = 30;
+                                        paras.speed = 0.5
+                                        paras.ammo = 20;
+                                        paras.dmgType = "exp";
+                                        break;
+                                default:
+                                        throw new Error("本工厂不能生产产品id="+id);
+                        }
+                        //对零件进行统一加工
+                        paras.atk*=2;
+                        
+                        //组装生成成品
+                        rt = new mod(paras);
+                        
+                        //对成品进行加工
+                        //没有给出weaponGroup以及infoPannel等的具体实现，仅作为例子。
+                        args.weaponGroup.push(rt);
+                        rt.refreshInfo(args.infoPannel);
+                        
+                        //返回成品
+                        return rt;                        
+                }
+        }
+}
+
+到此，
+与游戏平衡性有关的武器攻击力atk，速度speed等数据都已经提取出来可以快速修改
+也可以轻易地更换spriteClass来修改武器显示的模型
+
+可以通过给paras添加一个属性来增加武器的参数种类
+
+当然也可以仅修改case标签让一个武器id指向其他武器
+
+
+
+关于流水线工厂的备注
+
+1，目录长度与流水线工厂的适用性
+工厂能生产的产品种类在3~30个之间较好
+否则请考虑待生产对象是否有公共的功能可以集成到基类，或者作为一个属性单独拿出来
+
+2，为什么要用且仅用一个WeaponParas对象来作为具体模型类的参数？
+根据实际开发经验
+具体模型类设计不合理时，构造方法是可能被修改的，而且会造成链式的反应。
+譬如，火箭炮的构造方法是Rocket(owner:IUnitBase,dmgType:String,atk:Number,speed:Number = 0);
+同包的其它20个武器构造方法也是类似的。
+到了后来，我们创造了一个Damage类，这个类有2个属性，分别是dmgType和atk
+那么构造方法需要换成Rocket(owner:IUnitBase,dmg:Damage,speed:Number = 0);
+同包的其他20个武器都要如此更换，用了这个构造方法的工厂当然也难辞其咎要改动，这是一个体力劳动！
+还有更可怕的是，改过后我们可能又发现Damage对象不合理，决定再换回dmgType和atk。。。
+现在使用工厂以及一个WeaponParas对象，就能解决一个包内所有具体模型类的参数修改问题。
+
+3，关于约束2
+具体模型类不能持有WeaponParas对象是因为工厂只有一个WeaponParas对象
+根据Adobe文档，只持有一个对象并修改属性，比每次生产都new一个新对象更加节约资源。
+工厂每次生成产品时都会修改这个唯一对象的属性，
+持有该对象引用会导致具体模型类的参数混乱。
+该类对象仅在3个具体模型类的生成时被使用，并不被持有
+getter/setter只能徒增运行时的时间成本（访问getter时间是访问public属性的4倍以上）
+
+4，流水线工厂可以嵌套
+一个工厂需要使用的零件，可以是其它工厂的成品。
+设在上述代码中增加了一个“武器发射声音”
+设声音包使用了同样的流水线工厂模式
+可以给WeaponParas增加一个字段sound
+在“ 生产特有零件”阶段添加一行代码
+paras.sound = SoundFactory.product(caller,id)
+
+5，“对零件统一加工”以及“对成品加工”步骤的存在价值
+这两个步骤可以承受很多测试、修改要求
+譬如客户提出“武器攻击力太低了，游戏很难”
+即可简单地在“对零件统一加工”位置加一行paras.atk*=2;
+此外可以在此步骤调用零件相关的一些方法
+譬如零件是Sprite类型
+即可在这个步骤中将其addChild
